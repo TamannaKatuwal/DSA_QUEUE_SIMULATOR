@@ -41,7 +41,7 @@ The traffic control logic handles two states:
 - **Logic**: 
     1. Cycle through roads A -> B -> C -> D (Fair dispatch).
     2. Calculate Green Light Duration ($T$) dynamically:
-       $ T = \text{Avg}(\text{Waiting Vehicles on other lanes}) \times t_{\text{per\_vehicle}} $
+       T = Avg(Waiting Vehicles on other lanes) * t_per_vehicle
     3. This ensures fair distribution based on the average load of the junction.
 
 ### B. High-Priority Condition
