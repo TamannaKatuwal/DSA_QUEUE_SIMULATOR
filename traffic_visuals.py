@@ -66,3 +66,70 @@ def draw_road_layout(screen):
     draw_label("B (South)", (340, 750))
     draw_label("C (East)", (650, 340))
     draw_label("D (West)", (50, 340))
+
+def draw_traffic_lights(screen):
+    def draw_light_box(x, y, is_green, orientation='v'):
+        # Traffic light box background
+        box_w, box_h = (16, 40) if orientation == 'v' else (40, 16)
+        pygame.draw.rect(screen, BLACK, (x - box_w//2, y - box_h//2, box_w, box_h), border_radius=4)
+        
+        # Colors
+        r_color = RED if not is_green else (50, 0, 0)
+        g_color = GREEN if is_green else (0, 50, 0)
+        
+        radius = 5
+        if orientation == 'v':
+            pygame.draw.circle(screen, r_color, (x, y - 8), radius)
+            pygame.draw.circle(screen, g_color, (x, y + 8), radius)
+        else:
+            pygame.draw.circle(screen, r_color, (x - 8, y), radius)
+            pygame.draw.circle(screen, g_color, (x + 8, y), radius)
+
+    # Positions
+    lights = traffic_logic.traffic_lights
+    draw_light_box(290, 280, lights['A'] == 1, 'v')
+    draw_light_box(530, 520, lights['B'] == 1, 'v')
+    draw_light_box(520, 290, lights['C'] == 1, 'h')
+    draw_light_box(280, 510, lights['D'] == 1, 'h')
+
+    if traffic_logic.PRIORITY_MODE:
+        # Pulsing Red Glow when in Priority Mode
+        pulse = (math.sin(time.time() * 8.0) + 1.0) / 2.0
+        alpha = int(pulse * 100)
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        pygame.draw.rect(overlay, (255, 69, 0, alpha), (0, 0, WIDTH, HEIGHT), 10)
+        screen.blit(overlay, (0, 0))
+
+def draw_vehicles(screen):
+    queues = traffic_logic.vehicle_queues
+    moving = traffic_logic.moving_vehicles
+    
+    # Draw Queued Vehicles
+    # Lane A (Top)
+    for i, v in enumerate(queues['A']):
+        y = 260 - (i * 30)
+        if y > -40:
+            pygame.draw.rect(screen, v['color'], (370, y, 20, 28), border_radius=3)
+
+    # Lane B (Bottom)
+    for i, v in enumerate(queues['B']):
+        y = 540 + (i * 30)
+        if y < HEIGHT + 40:
+            pygame.draw.rect(screen, v['color'], (410, y, 20, 28), border_radius=3)
+            
+    # Lane C (Right)
+    for i, v in enumerate(queues['C']):
+        x = 540 + (i * 30)
+        if x < WIDTH + 40:
+            pygame.draw.rect(screen, v['color'], (x, 370, 28, 20), border_radius=3)
+
+    # Lane D (Left)
+    for i, v in enumerate(queues['D']):
+        x = 260 - (i * 30)
+        if x > -40:
+            pygame.draw.rect(screen, v['color'], (x, 410, 28, 20), border_radius=3)
+
+    # Moving
+    for mv in moving:
+        pygame.draw.rect(screen, YELLOW, (mv['x'], mv['y'], mv['w'], mv['h']), border_radius=4)
+        pygame.draw.rect(screen, (200, 150, 0), (mv['x']+2, mv['y']+2, mv['w']-4, mv['h']-4), border_radius=2)
