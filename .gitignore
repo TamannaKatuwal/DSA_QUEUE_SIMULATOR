@@ -1,0 +1,4 @@
+COMP_202/
+__pycache__/
+*.pyc
+lane_*.txt
