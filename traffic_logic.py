@@ -167,3 +167,17 @@ def process_vehicles():
                 mv['speed'] = MOVE_SPEED
                 moving_vehicles.append(mv)
                 last_served_time[road] = current_time
+
+# updates position of moving cars
+def update_moving_vehicles(dt):
+    to_rem = []
+    for i, mv in enumerate(moving_vehicles):
+        mv['x'] += mv['dx'] * mv['speed'] * dt
+        mv['y'] += mv['dy'] * mv['speed'] * dt
+        
+        # if car goes off screen, remove it
+        if mv['x'] < -50 or mv['x'] > WIDTH + 50 or mv['y'] < -50 or mv['y'] > HEIGHT + 50:
+            to_rem.append(i)
+            
+    for i in reversed(to_rem):
+        moving_vehicles.pop(i)
