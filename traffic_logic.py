@@ -83,3 +83,63 @@ def read_lane_files():
                                 })
         except Exception as e:
             print(f"File Error: {e}")
+
+# core logic for switching lights
+def update_lights_logic():
+    global current_green_road, last_switch_time, PRIORITY_MODE, current_duration
+    
+    current_time = time.time()
+    
+    # 1. Update Priorities based on queue length
+    # check if lane A is getting too full
+    if len(vehicle_queues['A']) > AL2_PRIORITY_THRESHOLD:
+        PRIORITY_MODE = True
+        road_priority_queue.add_task('A', priority=100) # give it super high priority
+    elif len(vehicle_queues['A']) < AL2_NORMAL_THRESHOLD:
+        # if we cleared enough cars, go back to normal
+        if PRIORITY_MODE:
+             PRIORITY_MODE = False
+             road_priority_queue.add_task('A', priority=1) 
+    
+    # make sure other roads are in the queue with normal priority
+    for r in ['B', 'C', 'D']:
+        road_priority_queue.add_task(r, priority=1)
+    if not PRIORITY_MODE:
+        road_priority_queue.add_task('A', priority=1)
+
+    # 2. Check if we need to switch lights
+    # time to switch if duration is passed or no green light is on
+    if current_green_road is None or (current_time - last_switch_time > current_duration):
+        next_road = None
+        
+        if PRIORITY_MODE:
+            next_road = 'A'
+            current_duration = 5.0 # quick flush duration
+        else:
+            # simple round robin logic
+            roads = ['A', 'B', 'C', 'D']
+            if current_green_road is None:
+                next_road = 'A'
+            else:
+                curr_idx = roads.index(current_green_road)
+                next_road = roads[(curr_idx + 1) % 4]
+            
+            # calculating dynamic duration based on assignment formula
+            other_roads = [r for r in roads if r != next_road]
+            total_waiting_others = sum(len(vehicle_queues[r]) for r in other_roads)
+            avg_waiting = total_waiting_others / 3.0
+            
+            t_per_vehicle = 3.0 
+            vehicles_to_serve = max(2, round(avg_waiting)) 
+            current_duration = vehicles_to_serve * t_per_vehicle
+            
+            # keep it reasonable, dont let it stay green forever
+            current_duration = min(current_duration, 30.0) 
+
+        # actually changing the light states
+        if next_road != current_green_road:
+            for r in ['A', 'B', 'C', 'D']:
+                traffic_lights[r] = 1 if r == next_road else 0
+            
+            current_green_road = next_road
+            last_switch_time = current_time
