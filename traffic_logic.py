@@ -143,3 +143,27 @@ def update_lights_logic():
             
             current_green_road = next_road
             last_switch_time = current_time
+
+# function to move cars from queue to intersection
+def process_vehicles():
+    current_time = time.time()
+    for road in ['A', 'B', 'C', 'D']:
+        # if light is Green (1) and cars are waiting
+        if traffic_lights[road] == 1 and vehicle_queues[road]:
+            # throttle the flow so they don't all go at once
+            if current_time - last_served_time[road] >= MIN_GAP:
+                v = vehicle_queues[road].popleft()
+                
+                # set spawn position based on the road
+                if road == 'A':
+                    mv = {'lane': 'A', 'x': 370.0, 'y': 280.0, 'dx': 0.0, 'dy': 1.0, 'w': 20, 'h': 28}
+                elif road == 'B':
+                    mv = {'lane': 'B', 'x': 410.0, 'y': 520.0, 'dx': 0.0, 'dy': -1.0, 'w': 20, 'h': 28}
+                elif road == 'C':
+                    mv = {'lane': 'C', 'x': 520.0, 'y': 370.0, 'dx': -1.0, 'dy': 0.0, 'w': 28, 'h': 20}
+                elif road == 'D':
+                    mv = {'lane': 'D', 'x': 260.0, 'y': 410.0, 'dx': 1.0, 'dy': 0.0, 'w': 28, 'h': 20}
+                
+                mv['speed'] = MOVE_SPEED
+                moving_vehicles.append(mv)
+                last_served_time[road] = current_time
