@@ -133,3 +133,64 @@ def draw_vehicles(screen):
     for mv in moving:
         pygame.draw.rect(screen, YELLOW, (mv['x'], mv['y'], mv['w'], mv['h']), border_radius=4)
         pygame.draw.rect(screen, (200, 150, 0), (mv['x']+2, mv['y']+2, mv['w']-4, mv['h']-4), border_radius=2)
+
+def draw_stats_panel(screen):
+    # HUD Configuration
+    # Reduced width to 270 to fit in the top-right quadrant (500-800) without overlapping the road.
+    panel_w, panel_h = 270, 150
+    panel_x, panel_y = WIDTH - panel_w - 10, 20
+    
+    # HUD Background (Dark Blue/Gray with heavy alpha)
+    hud_surface = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+    pygame.draw.rect(hud_surface, (10, 14, 28, 240), (0, 0, panel_w, panel_h), border_radius=10)
+    # HUD Border (Cyan/Blue accent)
+    pygame.draw.rect(hud_surface, (0, 191, 255), (0, 0, panel_w, panel_h), 2, border_radius=10)
+    screen.blit(hud_surface, (panel_x, panel_y))
+    
+    # Typography
+    header_font = pygame.font.SysFont("Verdana", 18, bold=True)
+    mono_font = pygame.font.SysFont("Consolas", 16, bold=True)
+    mini_font = pygame.font.SysFont("Verdana", 12)
+    
+    # 1. Header
+    header_col = (0, 191, 255) # Deep Sky Blue
+    t1 = header_font.render("SYSTEM STATUS", True, header_col)
+    screen.blit(t1, (panel_x + 20, panel_y + 15))
+    
+    # 2. Priority Indicator
+    is_priority = traffic_logic.PRIORITY_MODE
+    status_text = "PRIORITY - LANE A" if is_priority else "NORMAL CONDITION"
+    status_col = (255, 69, 0) if is_priority else (50, 205, 50) # Red-Orange vs Lime Green
+    
+    # Draw a "pill" background for status
+    pill_rect = pygame.Rect(panel_x + 20, panel_y + 45, panel_w - 40, 28)
+    pygame.draw.rect(screen, (status_col[0]//4, status_col[1]//4, status_col[2]//4), pill_rect, border_radius=6)
+    pygame.draw.rect(screen, status_col, pill_rect, 1, border_radius=6)
+    
+    ts = mono_font.render(status_text, True, status_col)
+    # Center text in pill
+    screen.blit(ts, (pill_rect.centerx - ts.get_width()//2, pill_rect.centery - ts.get_height()//2))
+    
+    # 3. Lane Counters (Grid)
+    # A B
+    # C D 
+    grid_y = panel_y + 85
+    col_1_x = panel_x + 30
+    col_2_x = panel_x + 160
+    
+    def draw_cell(lane, x, y):
+        count = len(traffic_logic.vehicle_queues[lane])
+        col = WHITE
+        if count > 5: col = (255, 165, 0) # Orange warn
+        if count > 10: col = (255, 50, 50) # Red critical
+        
+        lbl = mini_font.render(f"LANE {lane}", True, (150, 160, 180))
+        val = mono_font.render(f"{count:02d}", True, col)
+        
+        screen.blit(lbl, (x, y))
+        screen.blit(val, (x + 60, y - 2))
+
+    draw_cell('A', col_1_x, grid_y)
+    draw_cell('C', col_2_x, grid_y)
+    draw_cell('B', col_1_x, grid_y + 25)
+    draw_cell('D', col_2_x, grid_y + 25)
