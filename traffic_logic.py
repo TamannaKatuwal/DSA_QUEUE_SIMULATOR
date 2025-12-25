@@ -40,3 +40,22 @@ class PriorityQueue:
 
     def is_empty(self):
         return not bool(self.entry_finder)
+
+# --- State Variables ---
+vehicle_queues = {
+    'A': deque(),
+    'B': deque(),
+    'C': deque(),
+    'D': deque()
+}
+
+road_priority_queue = PriorityQueue()
+traffic_lights = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+moving_vehicles = [] # list for cars that are driving across the intersection
+last_served_time = {'A': 0.0, 'B': 0.0, 'C': 0.0, 'D': 0.0}
+
+# Timing stuff
+last_switch_time = 0
+current_green_road = None
+current_duration = 5.0
+PRIORITY_MODE = False
