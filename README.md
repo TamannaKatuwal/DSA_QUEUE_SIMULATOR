@@ -88,3 +88,7 @@ The traffic control logic handles two states:
 ## 9.Conclusion 
 The traffic junction simulator shows how effectively real logistical challenges can be solved with linear data structures. A system operates the traffic flow across the cross of four big roads by realizing the vehicle queues based on the FIFO principle and a logic-driven priority queue.
 The project confirms that the mathematical model used-vehicle dispatching-balances normal average flow with high-priority overrides, effectively maintaining junction efficiency while preventing deadlocks. This simulation allows clear and useful visualization, in a dynamic real-time environment, of queue management systems using Python and Pygame.
+## 10. Demo
+![ezgif-3d27fae53d03a32f](https://github.com/user-attachments/assets/d39e42dd-ca1f-421e-9e48-f37212abf89a)
+
+
